@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角度比較プリント</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 印刷用のスタイル */
+        @media print {
+            .no-print {
+                display: none;
+            }
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        .printable-area {
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center p-8 font-sans">
+    
+    <!-- 操作ボタン（印刷時には非表示） -->
+    <div class="controls no-print mb-8 flex space-x-4">
+        <button id="generate-btn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors">
+            新しい問題を作成
+        </button>
+        <button onclick="window.print()" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors">
+            印刷する
+        </button>
+    </div>
+
+    <!-- 印刷範囲 -->
+    <div id="printable-area" class="printable-area bg-white p-12 rounded-lg shadow-xl border">
+        <header class="mb-8">
+            <h1 class="text-2xl font-normal">大きい方の角に丸しよう</h1>
+            <p class="text-xl font-normal text-right mt-8">なまえ（　　　　　　　　　）</p>
+        </header>
+        
+        <main id="worksheet-body" class="space-y-8">
+            <!-- 問題はここに動的に生成されます -->
+        </main>
+    </div>
+
+    <script>
+        // DOMが読み込まれてからスクリプトを実行
+        document.addEventListener('DOMContentLoaded', () => {
+            const worksheetBody = document.getElementById('worksheet-body');
+            const generateBtn = document.getElementById('generate-btn');
+
+            // キャンバスに指定された角度を描画する関数
+            function drawAngle(canvasId, angle) {
+                try {
+                    const canvas = document.getElementById(canvasId);
+                    if (!canvas || !canvas.getContext) {
+                        console.error(`Canvas with id ${canvasId}が見つかりません。`);
+                        return;
+                    }
+                    const ctx = canvas.getContext('2d');
+                    const radius = 80;
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    // 角度をラジアンに変換
+                    const radians = angle * Math.PI / 180;
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 角度の線を描画 (基準は3時の方向)
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(centerX + radius, centerY); // 基準線
+                    ctx.moveTo(centerX, centerY);
+                    // 反時計回りになるように、角度をマイナスにする (CanvasのY軸は下向きのため)
+                    ctx.lineTo(centerX + radius * Math.cos(-radians), centerY + radius * Math.sin(-radians)); // 角度線
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // 角度を示す円弧を描画
+                    ctx.beginPath();
+                    // 反時計回りになるように、startAngleとendAngleを設定
+                    ctx.arc(centerX, centerY, radius / 3, -radians, 0);
+                    ctx.strokeStyle = '#3b82f6'; // Tailwindのblue-500
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                } catch (e) {
+                    console.error(`角度の描画中にエラーが発生しました (${canvasId}):`, e);
+                }
+            }
+
+            // 問題を生成して表示する関数
+            function generateProblems() {
+                try {
+                    if (!worksheetBody) {
+                        console.error("問題を表示するエリアが見つかりません。");
+                        return;
+                    }
+                    worksheetBody.innerHTML = ''; // 前の問題をクリア
+
+                    // 6セットの問題を作成
+                    for (let i = 1; i <= 6; i++) {
+                        // 10度から170度の間でランダムな角度を2つ作成
+                        const angle1 = Math.floor(Math.random() * 161) + 10;
+                        let angle2 = Math.floor(Math.random() * 161) + 10;
+                        
+                        // 2つの角度の差が15度未満の場合は作り直す
+                        while (Math.abs(angle1 - angle2) < 15) {
+                            angle2 = Math.floor(Math.random() * 161) + 10;
+                        }
+
+                        // 問題1セット分のHTML要素を作成
+                        const problemDiv = document.createElement('div');
+                        problemDiv.className = 'flex items-center border-b pb-4 last:border-b-0';
+                        problemDiv.innerHTML = `
+                            <div class="w-1/12 text-3xl font-bold text-gray-600">${i}.</div>
+                            <div class="w-11/12 grid grid-cols-2 gap-8 items-center">
+                                <div class="flex flex-col items-center">
+                                    <canvas id="canvas-${i}-1" width="200" height="200"></canvas>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <canvas id="canvas-${i}-2" width="200" height="200"></canvas>
+                                </div>
+                            </div>
+                        `;
+                        worksheetBody.appendChild(problemDiv);
+
+                        // すぐに描画処理を実行
+                        drawAngle(`canvas-${i}-1`, angle1);
+                        drawAngle(`canvas-${i}-2`, angle2);
+                    }
+                } catch (e) {
+                    console.error("問題の生成中にエラーが発生しました:", e);
+                    worksheetBody.innerHTML = '<p class="text-red-500">問題の生成中にエラーが発生しました。ページを再読み込みしてください。</p>';
+                }
+            }
+            
+            // ボタンのクリックイベントを設定
+            if (generateBtn) {
+                generateBtn.addEventListener('click', generateProblems);
+            }
+            
+            // ページ読み込み時に問題を自動生成
+            generateProblems();
+        });
+    </script>
+</body>
+</html>
+
