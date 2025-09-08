@@ -18,6 +18,15 @@
             body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                /* 印刷時には背景色と余白をリセット */
+                background-color: white !important;
+                padding: 0 !important;
+            }
+            /* 印刷時には影、ボーダー、角丸をなくす */
+            #printable-area {
+               box-shadow: none !important;
+               border: none !important;
+               border-radius: 0 !important;
             }
         }
         .printable-area {
@@ -229,5 +238,6 @@
     </script>
 </body>
 </html>
+
 
 
