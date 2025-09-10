@@ -18,11 +18,9 @@
             body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                /* 印刷時には背景色と余白をリセット */
                 background-color: white !important;
                 padding: 0 !important;
             }
-            /* 印刷時には影、ボーダー、角丸をなくす */
             #printable-area {
                box-shadow: none !important;
                border: none !important;
@@ -31,7 +29,6 @@
         }
         .printable-area {
             width: 210mm;
-            /* min-height: 297mm; <-- この行を削除またはコメントアウトしました */
             box-sizing: border-box;
         }
     </style>
@@ -39,28 +36,49 @@
 <body class="bg-gray-100 flex flex-col items-center p-8 font-sans">
     
     <!-- 操作パネル（印刷時には非表示） -->
-    <div class="controls no-print mb-8 p-6 bg-white rounded-lg shadow-md w-full max-w-4xl border">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- 設定項目 -->
-            <div class="space-y-4">
-                <div>
-                    <label for="num-problems-slider" class="block font-medium text-gray-700">問題数: <span id="num-problems-value" class="font-bold text-blue-600">6</span>問</label>
-                    <input id="num-problems-slider" type="range" min="2" max="10" value="6" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+    <div class="controls no-print mb-8 p-6 bg-white rounded-lg shadow-md w-full border" style="max-width: 210mm;">
+        <div class="flex items-end justify-between gap-x-8">
+            <!-- 左側: 設定 -->
+            <div class="flex flex-col space-y-4 flex-grow">
+                <!-- 角度 -->
+                <div class="flex items-center space-x-3">
+                   <label for="angle-select" class="font-medium text-gray-700 whitespace-nowrap w-20">角度:</label>
+                   <select id="angle-select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 w-full">
+                       <option value="set">(30°, 45°, 60°, 90°, 120°, 180°)</option>
+                       <option value="free180" selected>フリー (180°まで)</option>
+                       <option value="free360">フリー (360°まで)</option>
+                   </select>
                 </div>
-                <div>
-                    <label for="angle-diff-slider" class="block font-medium text-gray-700">角度の差（最小）: <span id="angle-diff-value" class="font-bold text-blue-600">15</span>度</label>
-                    <input id="angle-diff-slider" type="range" min="5" max="45" value="15" step="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <!-- 問題数 -->
+                    <div class="flex items-center space-x-3">
+                        <label class="font-medium text-gray-700 w-20">問題数:</label>
+                        <div class="flex items-center">
+                            <button id="decrement-btn" class="w-8 h-8 bg-gray-200 text-gray-700 font-bold rounded-l-md hover:bg-gray-300">-</button>
+                            <span id="num-problems-value" class="font-bold text-blue-600 text-lg w-10 h-8 text-center bg-gray-100 flex items-center justify-center">8</span>
+                            <button id="increment-btn" class="w-8 h-8 bg-gray-200 text-gray-700 font-bold rounded-r-md hover:bg-gray-300">+</button>
+                        </div>
+                    </div>
+                     <!-- 3時から -->
+                    <div class="flex items-center space-x-3">
+                        <label for="start-at-three-toggle" class="font-medium text-gray-700 whitespace-nowrap">3時から:</label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="start-at-three-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-300 peer-checked:bg-blue-600"></div>
+                            <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-full"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
-            <!-- 操作ボタン -->
-            <div class="flex flex-col md:flex-row items-center justify-end space-y-3 md:space-y-0 md:space-x-4">
-                <button id="generate-btn" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors">
-                    新しい問題
+            <!-- 右側: ボタン -->
+            <div class="flex space-x-3">
+                 <button id="generate-btn" class="px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors">
+                    作成
                 </button>
-                <button id="toggle-answers-btn" class="w-full md:w-auto px-6 py-3 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 transition-colors">
-                    答えを表示
+                <button id="toggle-answers-btn" class="px-4 py-3 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 transition-colors">
+                    答え
                 </button>
-                <button onclick="window.print()" class="w-full md:w-auto px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors">
+                <button onclick="window.print()" class="px-4 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors">
                     印刷
                 </button>
             </div>
@@ -68,13 +86,13 @@
     </div>
 
     <!-- 印刷範囲 -->
-    <div id="printable-area" class="printable-area bg-white p-12 rounded-lg shadow-xl border">
-        <header class="mb-8 flex justify-between items-center">
+    <div id="printable-area" class="printable-area bg-white pt-2 px-8 pb-8 rounded-lg shadow-xl border">
+        <header class="mb-6 flex justify-between items-center">
             <h1 class="text-2xl font-normal">角の大きさをしらべよう</h1>
             <p class="text-xl font-normal">なまえ（　　　　　　　　　）</p>
         </header>
         
-        <main id="worksheet-body" class="space-y-8">
+        <main id="worksheet-body">
             <!-- 問題はここに動的に生成されます -->
         </main>
     </div>
@@ -84,32 +102,53 @@
             const worksheetBody = document.getElementById('worksheet-body');
             const generateBtn = document.getElementById('generate-btn');
             const toggleAnswersBtn = document.getElementById('toggle-answers-btn');
-            const numProblemsSlider = document.getElementById('num-problems-slider');
+            
             const numProblemsValue = document.getElementById('num-problems-value');
-            const angleDiffSlider = document.getElementById('angle-diff-slider');
-            const angleDiffValue = document.getElementById('angle-diff-value');
+            const incrementBtn = document.getElementById('increment-btn');
+            const decrementBtn = document.getElementById('decrement-btn');
+            const startAtThreeToggle = document.getElementById('start-at-three-toggle');
+            const angleSelect = document.getElementById('angle-select');
 
-            let problemData = []; // { angle1, angle2, rotation1, rotation2 }
+            let problemData = []; // { angle, rotation }
             let answersVisible = false;
+            let numProblems = 8;
+            const MIN_PROBLEMS = 1;
+            const MAX_PROBLEMS = 20;
 
-            // スライダーの値を表示に反映
-            numProblemsSlider.addEventListener('input', (e) => {
-                numProblemsValue.textContent = e.target.value;
-            });
-            angleDiffSlider.addEventListener('input', (e) => {
-                angleDiffValue.textContent = e.target.value;
-            });
+            numProblemsValue.textContent = numProblems;
 
-            // キャンバスに指定された角度と回転で描画する関数
+            incrementBtn.addEventListener('click', () => {
+                if (numProblems < MAX_PROBLEMS) {
+                    numProblems++;
+                    numProblemsValue.textContent = numProblems;
+                }
+            });
+            decrementBtn.addEventListener('click', () => {
+                if (numProblems > MIN_PROBLEMS) {
+                    numProblems--;
+                    numProblemsValue.textContent = numProblems;
+                }
+            });
+            
+            // 配列をシャッフルする関数 (Fisher-Yates algorithm)
+            function shuffleArray(array) {
+                let currentIndex = array.length,  randomIndex;
+                while (currentIndex != 0) {
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex--;
+                    [array[currentIndex], array[randomIndex]] = [
+                        array[randomIndex], array[currentIndex]];
+                }
+                return array;
+            }
+
             function drawAngle(canvasId, angle, rotation) {
                 try {
                     const canvas = document.getElementById(canvasId);
-                    if (!canvas || !canvas.getContext) {
-                        console.error(`Canvas with id ${canvasId} not found.`);
-                        return;
-                    }
+                    if (!canvas || !canvas.getContext) return;
+                    
                     const ctx = canvas.getContext('2d');
-                    const radius = 80;
+                    const radius = canvas.width * 0.4;
                     const centerX = canvas.width / 2;
                     const centerY = canvas.height / 2;
                     const radians = angle * Math.PI / 180;
@@ -117,16 +156,11 @@
 
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
-                    ctx.save(); // 現在の描画状態を保存
-
-                    // 回転の中心をキャンバスの中心に移動
+                    ctx.save();
                     ctx.translate(centerX, centerY);
-                    // キャンバスを回転
                     ctx.rotate(rotationRadians);
-                    // 中心を元の位置に戻す
                     ctx.translate(-centerX, -centerY);
 
-                    // 角度の線を描画
                     ctx.beginPath();
                     ctx.moveTo(centerX, centerY);
                     ctx.lineTo(centerX + radius, centerY);
@@ -136,110 +170,105 @@
                     ctx.lineWidth = 3;
                     ctx.stroke();
 
-                    // 角度を示す円弧を描画
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, radius / 3, -radians, 0);
-                    ctx.strokeStyle = '#3b82f6'; // Tailwind blue-500
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
+                    // 0度の場合は円弧を描画しない
+                    if (angle > 0) {
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, radius / 3, -radians, 0);
+                        ctx.strokeStyle = '#3b82f6';
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+                    }
 
-                    ctx.restore(); // 描画状態を元に戻す
+                    ctx.restore();
                 } catch (e) {
                     console.error(`Error drawing angle on ${canvasId}:`, e);
                 }
             }
 
-            // 問題を生成して表示する関数
             function generateProblems() {
                 try {
-                    if (!worksheetBody) {
-                        console.error("Worksheet body not found.");
-                        return;
-                    }
+                    if (!worksheetBody) return;
                     worksheetBody.innerHTML = '';
                     problemData = [];
-                    answersVisible = false; // 新しい問題を作成したら答えを隠す
-                    toggleAnswersBtn.textContent = '答えを表示';
+                    answersVisible = false;
+                    toggleAnswersBtn.textContent = '答え';
+                    
+                    // 行間を狭めるために gap-y-4 に変更
+                    worksheetBody.className = 'grid grid-cols-2 gap-x-12 gap-y-4';
 
+                    const useRandomRotation = !startAtThreeToggle.checked;
+                    
+                    const angleSelection = angleSelect.value;
+                    const basicSet = [30, 45, 60, 90, 120, 180];
+                    
+                    let shuffledSet = [];
+                    if (angleSelection === 'set') {
+                        shuffledSet = shuffleArray([...basicSet]);
+                    }
 
-                    const numProblems = parseInt(numProblemsSlider.value, 10);
-                    const minDiff = parseInt(angleDiffSlider.value, 10);
 
                     for (let i = 1; i <= numProblems; i++) {
-                        const angle1 = Math.floor(Math.random() * 161) + 10;
-                        let angle2;
-                        do {
-                            angle2 = Math.floor(Math.random() * 161) + 10;
-                        } while (Math.abs(angle1 - angle2) < minDiff);
+                        let angle;
+                        
+                        if (angleSelection === 'free180') {
+                            angle = Math.floor(Math.random() * 170) + 10;
+                        } else if (angleSelection === 'free360') {
+                            angle = Math.floor(Math.random() * 350) + 10;
+                        } else if (angleSelection === 'set') {
+                            // 6問目まではシャッフルしたセットから順に出題
+                            if (i <= shuffledSet.length) {
+                                angle = shuffledSet[i - 1];
+                            } else {
+                                // 7問目以降はランダムに選択
+                                angle = basicSet[Math.floor(Math.random() * basicSet.length)];
+                            }
+                        }
 
-                        const rotation1 = Math.floor(Math.random() * 360);
-                        const rotation2 = Math.floor(Math.random() * 360);
+                        const rotation = useRandomRotation ? Math.floor(Math.random() * 360) : 0;
 
-                        problemData.push({ angle1, angle2, rotation1, rotation2 });
+                        problemData.push({ angle, rotation });
 
                         const problemDiv = document.createElement('div');
-                        problemDiv.className = 'flex items-center border-b pb-4 last:border-b-0';
+                        problemDiv.className = 'flex flex-col items-center relative';
                         problemDiv.innerHTML = `
-                            <div class="w-1/12 text-3xl font-bold text-gray-600">${i}.</div>
-                            <div class="w-11/12 grid grid-cols-2 gap-8 items-center">
-                                <div class="flex flex-col items-center">
-                                    <canvas id="canvas-${i}-1" width="200" height="200"></canvas>
-                                    <p class="mt-2 text-xl font-mono answer-box" id="answer-${i}-1">（　　　）</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <canvas id="canvas-${i}-2" width="200" height="200"></canvas>
-                                    <p class="mt-2 text-xl font-mono answer-box" id="answer-${i}-2">（　　　）</p>
-                                </div>
-                            </div>
+                            <span class="absolute top-0 left-0 text-base font-normal text-gray-700">${i}.</span>
+                            <canvas id="canvas-${i}" width="260" height="260"></canvas>
+                            <p class="mt-1 text-lg font-mono answer-box" id="answer-${i}">（　　　　）</p>
                         `;
                         worksheetBody.appendChild(problemDiv);
 
-                        drawAngle(`canvas-${i}-1`, angle1, rotation1);
-                        drawAngle(`canvas-${i}-2`, angle2, rotation2);
+                        drawAngle(`canvas-${i}`, angle, rotation);
                     }
                 } catch (e) {
                     console.error("Error generating problems:", e);
-                    worksheetBody.innerHTML = '<p class="text-red-500">問題の生成中にエラーが発生しました。ページを再読み込みしてください。</p>';
+                    worksheetBody.innerHTML = '<p class="text-red-500">問題の生成中にエラーが発生しました。</p>';
                 }
             }
             
-            // 答えの表示を切り替える関数
             function toggleAnswers() {
                 answersVisible = !answersVisible;
-                toggleAnswersBtn.textContent = answersVisible ? '答えを隠す' : '答えを表示';
+                toggleAnswersBtn.textContent = answersVisible ? '答えを隠す' : '答え';
 
                 problemData.forEach((data, index) => {
                     const i = index + 1;
-                    const answerBox1 = document.getElementById(`answer-${i}-1`);
-                    const answerBox2 = document.getElementById(`answer-${i}-2`);
+                    const answerBox = document.getElementById(`answer-${i}`);
+                    if (!answerBox) return;
                     
                     if (answersVisible) {
-                        if (data.angle1 > data.angle2) {
-                            answerBox1.innerHTML = `（ <span class="text-red-500 font-bold">${data.angle1}°</span> ）`;
-                            answerBox2.innerHTML = `（ ${data.angle2}° ）`;
-                        } else {
-                            answerBox1.innerHTML = `（ ${data.angle1}° ）`;
-                            answerBox2.innerHTML = `（ <span class="text-red-500 font-bold">${data.angle2}°</span> ）`;
-                        }
+                        answerBox.innerHTML = `（ <span class="text-red-500 font-bold">${data.angle}°</span> ）`;
                     } else {
-                        answerBox1.textContent = '（　　　）';
-                        answerBox2.textContent = '（　　　）';
+                        answerBox.textContent = '（　　　　）';
                     }
                 });
             }
 
-            // イベントリスナーを設定
             generateBtn.addEventListener('click', generateProblems);
             toggleAnswersBtn.addEventListener('click', toggleAnswers);
 
-            // ページ読み込み時に問題を自動生成
             generateProblems();
         });
     </script>
 </body>
 </html>
-
-
-
 
 
