@@ -22,9 +22,9 @@
                 padding: 0 !important;
             }
             #printable-area {
-               box-shadow: none !important;
-               border: none !important;
-               border-radius: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
             }
         }
         .printable-area {
@@ -44,9 +44,9 @@
                 <div class="flex items-center space-x-3">
                    <label for="angle-select" class="font-medium text-gray-700 whitespace-nowrap w-20">角度:</label>
                    <select id="angle-select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 w-full">
-                       <option value="set">(30°, 45°, 60°, 90°, 120°, 180°)</option>
-                       <option value="free180" selected>フリー (180°まで)</option>
-                       <option value="free360">フリー (360°まで)</option>
+                        <option value="set">(30°, 45°, 60°, 90°, 120°, 180°)</option>
+                        <option value="free180" selected>フリー (180°まで)</option>
+                        <option value="free360">フリー (360°まで)</option>
                    </select>
                 </div>
                 <div class="flex items-center justify-between">
@@ -59,11 +59,11 @@
                             <button id="increment-btn" class="w-8 h-8 bg-gray-200 text-gray-700 font-bold rounded-r-md hover:bg-gray-300">+</button>
                         </div>
                     </div>
-                     <!-- 3時から -->
+                     <!-- ９時から -->
                     <div class="flex items-center space-x-3">
-                        <label for="start-at-three-toggle" class="font-medium text-gray-700 whitespace-nowrap">3時から:</label>
+                        <label for="start-at-nine-toggle" class="font-medium text-gray-700 whitespace-nowrap">９時から:</label>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="start-at-three-toggle" class="sr-only peer">
+                            <input type="checkbox" id="start-at-nine-toggle" class="sr-only peer">
                             <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-300 peer-checked:bg-blue-600"></div>
                             <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-full"></span>
                         </label>
@@ -106,7 +106,7 @@
             const numProblemsValue = document.getElementById('num-problems-value');
             const incrementBtn = document.getElementById('increment-btn');
             const decrementBtn = document.getElementById('decrement-btn');
-            const startAtThreeToggle = document.getElementById('start-at-three-toggle');
+            const startAtNineToggle = document.getElementById('start-at-nine-toggle');
             const angleSelect = document.getElementById('angle-select');
 
             let problemData = []; // { angle, rotation }
@@ -165,7 +165,8 @@
                     ctx.moveTo(centerX, centerY);
                     ctx.lineTo(centerX + radius, centerY);
                     ctx.moveTo(centerX, centerY);
-                    ctx.lineTo(centerX + radius * Math.cos(-radians), centerY + radius * Math.sin(-radians));
+                    // 時計回りに描画するように修正
+                    ctx.lineTo(centerX + radius * Math.cos(radians), centerY + radius * Math.sin(radians));
                     ctx.strokeStyle = 'black';
                     ctx.lineWidth = 3;
                     ctx.stroke();
@@ -173,7 +174,8 @@
                     // 0度の場合は円弧を描画しない
                     if (angle > 0) {
                         ctx.beginPath();
-                        ctx.arc(centerX, centerY, radius / 3, -radians, 0);
+                        // 時計回りに円弧を描画するように修正
+                        ctx.arc(centerX, centerY, radius / 3, 0, radians);
                         ctx.strokeStyle = '#3b82f6';
                         ctx.lineWidth = 2.5;
                         ctx.stroke();
@@ -196,7 +198,7 @@
                     // 行間を狭めるために gap-y-4 に変更
                     worksheetBody.className = 'grid grid-cols-2 gap-x-12 gap-y-4';
 
-                    const useRandomRotation = !startAtThreeToggle.checked;
+                    const useRandomRotation = !startAtNineToggle.checked;
                     
                     const angleSelection = angleSelect.value;
                     const basicSet = [30, 45, 60, 90, 120, 180];
@@ -224,7 +226,8 @@
                             }
                         }
 
-                        const rotation = useRandomRotation ? Math.floor(Math.random() * 360) : 0;
+                        // 「９時から」がチェックされている場合、基準を180度回転させる
+                        const rotation = useRandomRotation ? Math.floor(Math.random() * 360) : 180;
 
                         problemData.push({ angle, rotation });
 
@@ -270,5 +273,3 @@
     </script>
 </body>
 </html>
-
-
